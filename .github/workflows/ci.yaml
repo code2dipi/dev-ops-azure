@@ -1,10 +1,11 @@
 name: Java CI with Maven
 on:
   push:
-    branches: [ "main"]
+    branches: [ "master"]
     pull_request:    # Checks *before* merge
-      branches: [ "main" ]
+      branches: [ "master" ]
 jobs:
+
   build:
     runs-on: ubuntu-latest
     steps:
