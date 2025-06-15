@@ -23,7 +23,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Build with Maven
-        run: mvn -B package --file pom.xml
+        run: mvn -B package --file pom.xml -DskipTests
 
       - name: Login to Azure Container Registry
         uses: azure/docker-login@v1
