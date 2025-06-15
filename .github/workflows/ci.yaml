@@ -50,3 +50,7 @@ jobs:
         run: |
           docker push ${{ secrets.ACR_LOGIN_SERVER }}/my-java-app:${{ github.sha }}
           docker push ${{ secrets.ACR_LOGIN_SERVER }}/my-java-app:latest
+
+       # Deploy to AKS / WEB APP / ...
+
+       # Integration test.
