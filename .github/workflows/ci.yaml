@@ -1,13 +1,12 @@
 name: Build and Push to ACR
 
 on:
-
   workflow_dispatch:
   push:
     branches: [ "main" ]
 
 env:
-  REGISTRY: {{ secrets.ACR_LOGIN_SERVER}}
+  REGISTRY: ${{ secrets.ACR_LOGIN_SERVER }}
   IMAGE_NAME: pipeline-test
   VERSION: ${{ github.sha }}
 
@@ -29,7 +28,7 @@ jobs:
       - name: Login to Azure Container Registry
         uses: azure/docker-login@v1
         with:
-          login-server: ${{ env.REGISTRY }}
+          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
