@@ -1,3 +1,6 @@
-FROM eclipse-temurin:17-jdk
-COPY target/pipeline-test /pipeline-test.jar
-CMD ["java", "-jar", "/pipeline-test.jar"]
+FROM eclipse-temurin:11-jre
+
+WORKDIR /app
+COPY target/pipeline-test-1.0-SNAPSHOT.jar /app/app.jar
+
+ENTRYPOINT ["java", "-jar", "app.jar"]

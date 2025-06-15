@@ -1,56 +1,39 @@
-name: Java CI/CD with ACR
+name: Build and Push to ACR
 
 on:
   push:
-    branches: ["master"]
+    branches: [ "main" ]
   pull_request:
-    branches: ["master"]
+    branches: [ "main" ]
+
+env:
+  REGISTRY: {{ secrets.ACR_LOGIN_SERVER}}
+  IMAGE_NAME: pipeline-test
+  VERSION: ${{ github.sha }}
 
 jobs:
-  # Job 1: Build the Java app
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-      - run: mvn -B package --file pom.xml
-
-  # Job 2: Run tests (depends on build)
-  test:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: mvn -B test --file pom.xml
-
-  # Job 3: Build and push to ACR (depends on test)
   build-and-push:
-    needs: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
-      # Login to ACR using GitHub secrets
-      - name: Docker Login
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+
+      - name: Build with Maven
+        run: mvn -B package --file pom.xml
+
+      - name: Login to Azure Container Registry
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ env.REGISTRY }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build and push Docker image
         run: |
-          echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ secrets.ACR_LOGIN_SERVER }} \
-            -u ${{ secrets.ACR_USERNAME }} --password-stdin
-
-      # Build and tag the Docker image
-      - name: Build Docker Image
-        run: |
-          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/my-java-app:${{ github.sha }} .
-          docker tag ${{ secrets.ACR_LOGIN_SERVER }}/my-java-app:${{ github.sha }} ${{ secrets.ACR_LOGIN_SERVER }}/my-java-app:latest
-
-      # Push to ACR
-      - name: Push to ACR
-        run: |
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/my-java-app:${{ github.sha }}
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/my-java-app:latest
-
-       # Deploy to AKS / WEB APP / ...
-
-       # Integration test.
+          docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }} .
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
